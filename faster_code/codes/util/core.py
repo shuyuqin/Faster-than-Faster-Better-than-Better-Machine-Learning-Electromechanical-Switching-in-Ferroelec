@@ -37,7 +37,7 @@ def generate_data(values, function=non_linear_fn, length=25, range_=[-1, 1]):
     :rtype: array of float
     """
 
-
+    # build x vector
     x = np.linspace(range_[0], range_[1], 25)
 
     data = np.zeros((values.shape[0], 25))
