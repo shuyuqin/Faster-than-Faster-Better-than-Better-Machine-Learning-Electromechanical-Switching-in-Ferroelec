@@ -6,7 +6,6 @@ import os
 from os.path import join as pjoin
 import matplotlib.pyplot as plt
 import glob
-#import moviepy as mpy
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
 
 
