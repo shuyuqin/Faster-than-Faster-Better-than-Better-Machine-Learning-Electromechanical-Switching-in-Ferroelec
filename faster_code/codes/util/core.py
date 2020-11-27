@@ -7,6 +7,9 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import ndimage
 import matplotlib as plt
+from sklearn.decomposition import DictionaryLearning
+from tqdm import tqdm
+from .file import *
 
 
 def non_linear_fn(t, x, y, z):
@@ -158,10 +161,10 @@ def embedding_maps(data, image, colorbar_shown=True,
 
     """
 
-    :param data:
+    :param data: data need to be showed in image format
     :type data: array
-    :param image:
-    :type image:
+    :param image: the output shape of the image
+    :type image: array
     :param colorbar_shown:
     :type colorbar_shown:
     :param c_lim:
@@ -198,3 +201,131 @@ def embedding_maps(data, image, colorbar_shown=True,
     fig.tight_layout()
 
     return fig
+
+printing = {'PNG':True,
+            'EPS':False,
+           'dpi': 300}
+class generator:
+    def __init__(self,
+                 model,
+                 scaled_data,
+                 image,
+                 channels=None,
+                 color_map='viridis'):
+        self.model = model
+        self.image = image
+        # defines the colorlist
+        self.cmap = plt.get_cmap(color_map)
+
+        if isinstance(model, type(DictionaryLearning())):
+            def predictor(values):
+                return np.dot(values, model.components_)
+
+            self.predict = predictor
+            self.vector_length = scaled_data.shape[1]
+            self.embeddings = model.transform(scaled_data)
+        elif isinstance(model, type(model_builder(np.atleast_3d(scaled_data)))):
+            def predictor(values):
+                return model.decoder_model.predict(np.atleast_2d(values))
+
+            self.embeddings = model.encoder_model.predict(np.atleast_3d(scaled_data))
+            self.predict = predictor
+            self.vector_length = scaled_data.shape[1]
+        else:
+            raise Exception('The model is not an included model type '.format(dictonary_model))
+
+        if channels == None:
+            self.channels = range(self.embeddings.shape[1])
+        else:
+            self.channels = channels
+
+    def generator_images(self,
+                         folder,
+                         ranges=None,
+                         number_of_loops=200,
+                         averaging_number=100,
+                         graph_layout=[3, 3],
+                         y_lim=[-2, 2],
+                         xlabel='Voltage (V)',
+                         ylabel='',
+                         xvalues=None
+                         ):
+        folder = make_folder(folder)
+        for i in tqdm(range(number_of_loops)):
+            # builds the figure
+            # fig, ax = plt.subplots(graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0), graph_layout[1],
+            #                       figsize=(3 * graph_layout[1], 3 * (graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0))))
+            fig, ax = layout_fig(graph_layout[0] * 3, mod=graph_layout[1])
+            ax = ax.reshape(-1)
+            # loops around all of the embeddings
+            for j, channel in enumerate(self.channels):
+
+                # checks if the value is None and if so skips tp next iteration
+                if i is None:
+                    continue
+
+                if xvalues is None:
+                    xvalues = range(self.vector_length)
+
+                if ranges is None:
+                    ranges = np.stack((np.min(self.embeddings, axis=0),
+                                       np.max(self.embeddings, axis=0)), axis=1)
+
+                # linear space values for the embeddings
+                value = np.linspace(ranges[channel][0], ranges[channel][1],
+                                    number_of_loops)
+                # finds the nearest point to the value and then takes the average
+                # average number of points based on the averaging number
+                idx = find_nearest(
+                    self.embeddings[:, channel],
+                    value[i],
+                    averaging_number)
+                # computes the mean of the selected index
+                gen_value = np.mean(self.embeddings[idx], axis=0)
+                # specifically updates the value of the embedding to visualize based on the
+                # linear spaced vector
+                gen_value[channel] = value[i]
+                # generates the loop based on the model
+                generated = self.predict(gen_value).squeeze()
+                # plots the graph
+
+                # image_,angle_ = rotate_and_crop(self.embeddings[:, channel].reshape(self.image.shape[0:2]))
+                ax[j].imshow(self.embeddings[:, channel].reshape(self.image.shape[0:2]), clim=ranges[channel])
+                #                ax[j].imshow(image_, )
+                ax[j].set_yticklabels('')
+                ax[j].set_xticklabels('')
+
+                ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
+                # formats the graph
+                ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
+                #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
+                ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
+                ax[j + len(self.channels)].set_xlabel(xlabel)
+
+                ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1],
+                                                    color=self.cmap((i + 1) / number_of_loops))
+                # formats the graph
+                ax[j + len(self.channels) * 2].set_ylim(y_lim[0], 1.6 * y_lim[1])
+                #      ax[j+len(self.channels)*2].set_yticklabels('Resonance (KHz)')
+                ax[j + len(self.channels) * 2].set_ylabel('Resonance (KHz)')
+                ax[j + len(self.channels) * 2].set_xlabel(xlabel)
+
+                # gets the position of the axis on the figure
+                # pos = ax[j].get_position()
+                # plots and formats the binary cluster map
+                # axes_in = plt.axes([pos.x0 - .03, pos.y0, .06 , .06])
+                ## rotates the figure
+                # if plot_format['rotation']:
+                #    imageb, scalefactor = rotate_and_crop(embeddings[:, j].reshape(image.shape),
+                #                                          angle=plot_format['angle'], frac_rm=plot_format['frac_rm'])
+                # else:
+                #    scalefactor = 1
+                #    imageb = encode_small[:, j].reshape(60, 60)
+                # plots the imagemap and formats
+                # image_,angle_ = rotate_and_crop()
+
+            ax[0].set_ylabel(ylabel)
+            fig.tight_layout()
+            savefig(pjoin(folder, f'{i:04d}_maps'), printing)
+
+            plt.close(fig)
