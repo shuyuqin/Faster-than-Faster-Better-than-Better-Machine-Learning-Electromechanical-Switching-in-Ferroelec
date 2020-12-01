@@ -28,6 +28,7 @@ def make_folder(folder, **kwargs):
 def savefig(filename, printing):
 
     """
+    function that saves the figure
 
     :param filename: path to save file
     :type filename: string
@@ -57,6 +58,7 @@ def savefig(filename, printing):
 def make_movie(movie_name, input_folder, output_folder, file_format,
                             fps, output_format = 'mp4', reverse = False):
     """
+    function that makes the movie of the images data
 
     :param movie_name: name of the movie
     :type movie_name: string

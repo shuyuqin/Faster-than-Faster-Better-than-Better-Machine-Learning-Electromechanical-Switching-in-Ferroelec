@@ -10,6 +10,7 @@ import matplotlib as plt
 from sklearn.decomposition import DictionaryLearning
 from tqdm import tqdm
 from .file import *
+from .machine_learning import *
 
 
 def non_linear_fn(t, x, y, z):
@@ -56,6 +57,7 @@ def generate_data(values, function=non_linear_fn, length=25, range_=[-1, 1]):
 
 def find_nearest(array, value, averaging_number):
     """
+    function to find the index of the nearest value in the array
 
     :param array: image to find the index closest to a value
     :type array: float, array
@@ -72,6 +74,7 @@ def find_nearest(array, value, averaging_number):
 
 def rotate_and_crop(image_, angle=60.46, frac_rm=0.17765042979942694):
     """
+    function to rotate the image
 
     :param image_: image array to plot
     :type image_: array
@@ -111,6 +114,7 @@ def rotate_and_crop(image_, angle=60.46, frac_rm=0.17765042979942694):
 def layout_fig(graph, mod=None):
 
     """
+    function
 
     :param graph: number of axes to make
     :type graph: int
@@ -165,14 +169,14 @@ def embedding_maps(data, image, colorbar_shown=True,
     :type data: array
     :param image: the output shape of the image
     :type image: array
-    :param colorbar_shown:
-    :type colorbar_shown:
-    :param c_lim:
-    :type c_lim:
-    :param mod:
-    :type mod:
-    :param title:
-    :type title:
+    :param colorbar_shown: whether to show the color bar on the left of image
+    :type colorbar_shown: boolean
+    :param c_lim: Sets the scales of colorbar
+    :type c_lim: list
+    :param mod: set the number of image for each line
+    :type mod: int
+    :param title: set the title of figure
+    :type title: string
     :return: handel to figure being created
     :rtype: matplotlib figure
     """
@@ -185,6 +189,7 @@ def embedding_maps(data, image, colorbar_shown=True,
             ax.set_yticklabels('')
 
             # adds the colorbar
+        if colorbar_shown == True:
             divider = make_axes_locatable(ax)
             cax = divider.append_axes('right', size='10%', pad=0.05)
             cbar = plt.colorbar(im, cax=cax, format='%.1e')
@@ -232,7 +237,7 @@ class generator:
             self.predict = predictor
             self.vector_length = scaled_data.shape[1]
         else:
-            raise Exception('The model is not an included model type '.format(dictonary_model))
+            raise Exception('The model is not an included model type ')
 
         if channels == None:
             self.channels = range(self.embeddings.shape[1])
