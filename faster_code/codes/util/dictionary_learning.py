@@ -5,46 +5,6 @@ import numpy as np
 from scipy import interpolate
 
 
-class global_scaler:
-
-
-
-    def fit(self, data):
-
-    # calculate the mean and standard deviation of the input array
-        self.mean = np.mean(data.reshape(-1))
-        self.std = np.std(data.reshape(-1))
-
-    def fit_transform(self, data):
-        """
-
-        :param data: the input array
-        :type data: array
-        :return: the data get through the normalization
-        :rtype: array
-        """
-        self.fit(data)
-        return self.transform(data)
-
-    def transform(self, data):
-        """
-
-        :param data: the input data
-        :type: array
-        :return: the data get through the normalization
-        :rtype: array
-        """
-        return (data - self.mean) / self.std
-
-    def inverse_transform(self, data):
-        """
-
-        :param data: the normalized array
-        :type: array
-        :return: the same scale of the raw data
-        :rtype: array
-        """
-        return (data * self.std) + self.mean
 
 def range_filter(data, ranges):
     """

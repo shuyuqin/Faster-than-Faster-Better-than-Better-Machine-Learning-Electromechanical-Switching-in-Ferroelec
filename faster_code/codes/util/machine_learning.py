@@ -17,6 +17,7 @@ import tensorflow.keras as keras
 
 
 
+
 class Sampling(layers.Layer):
     """Uses (z_mean, z_log_var) to sample z, the vector encoding a digit."""
 
@@ -170,6 +171,108 @@ class model_builder:
         kl_loss = -0.5 * tf.reduce_mean(z_log_var - tf.square(z_mean) - tf.exp(z_log_var) + 1)
         self.vae.add_loss(self.coef * kl_loss)
 
+
+def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
+          ,new_data,folder_,ith_epoch=None,file_path=None,batch_size=300):
+    """
+
+    :param epochs: total epochs training
+    :type epochs: int
+    :param epoch_per_increase: number of epochs of each beta increase
+    :type epoch_per_increase: int
+    :param initial_beta: initial beta value
+    :type initial_beta: float
+    :param beta_per_increase: beta increase for each epoch_per_increase
+    :type beta_per_increase: float
+    :param new_data: input data set
+    :type new_data: array
+    :param folder_: folder save the weights
+    :type folder_: string
+    :param ith_epoch: training from the ith epoch
+    :type ith_epoch: int
+    :param file_path: weights dictionary from ith epoch
+    :type file_path: string
+    :param batch_size: batch size for training
+    :type batch_size: int
+
+    """
+    best_loss = float('inf')
+    iteration = (epochs // epoch_per_increase) + 1
+    model = []
+    # filepath =folder + '/if_appear_means_bug_happens.hdf5'
+    if ith_epoch == None:
+        list_= [0,iteration]
+    else:
+        list_=[ith_epoch,iteration]
+
+    for i in range(list_[0],list_[1]):
+
+        if i == iteration - 1:
+            training_epochs = epochs - epoch_per_increase * (iteration - 1)
+            if training_epochs <= 0:
+                break
+        else:
+            training_epochs = epoch_per_increase
+
+        beta = initial_beta + beta_per_increase * i
+        print(beta)
+        del (model)
+        model = model_builder(np.atleast_3d(new_data), embedding=16,
+                              VAE=True, l1_norm_embedding=1e-5, coef=beta)
+        run_id = '_beta_step_size='+str(beta_per_increase)+'_'+ np.str(model.embedding) + '_layer_size_' + np.str(
+            model.layer_size) + '_l1_norm_' + np.str(model.l1_norm) + '_l1_norm_' + np.str(
+            model.l1_norm_embedding) + '_VAE_' + np.str(model.VAE)
+        folder = folder_ + '_' + run_id
+        #
+        # if i==30:
+        #            filepath = 'piezoresponse+resonacnce_1/beta=0.0725__beta_step_siez=0.0025_16_layer_size_128_l1_norm_0_l1_norm_1e-05_VAE_True/triple_phase_weights2_epochs=29.hdf5'
+        if i == ith_epoch:
+            filepath = file_path
+
+        if i > 0:
+            print(filepath)
+            model.vae.load_weights(filepath)
+
+
+        # elif i == 22:
+        #     training_epochs = 1000 - 79
+        #     model.vae.load_weights(
+        #         '/content/drive/My Drive/papers/Faster_better_v2_Training_11_06_2020/two_data_combined/piezoresponse+resonacnce/beta=0.055__beta_step_siez=0.0025_16_layer_size_128_l1_norm_0_l1_norm_1e-05_VAE_True/phase_shift_only0.055_epochs_begin_6000+22000+0079-0.03151.hdf5')
+        # else:
+        #     continue
+
+        optimizer = tf.keras.optimizers.Adam(learning_rate=3e-5)
+        model.vae.compile(optimizer, loss=tf.keras.losses.MeanSquaredError())
+
+        #        beta = beta + i*beta_per_increase
+        # sets the file path
+        epoch_begin = i * epoch_per_increase
+        if i > 0:
+            filepath = folder + '/phase_shift_only' + np.str(beta) + '_epochs_begin_6000+' + np.str(
+                epoch_begin) + '+{epoch:04d}' + '-{loss:.5f}.hdf5'
+        else:
+            filepath = folder + '/phase_shift_only' + np.str(beta) + '_epochs_begin_' + np.str(
+                epoch_begin) + '+{epoch:04d}' + '-{loss:.5f}.hdf5'
+
+        # callback for saving checkpoints. Checkpoints are only saved when the model improves
+        checkpoint = keras.callbacks.ModelCheckpoint(filepath, monitor='loss',
+                                                     verbose=0, save_best_only=True,
+                                                     save_weights_only=True, mode='min')
+
+        #         if i==0:
+
+        #             model.vae.compile(optimizer, loss=KL_Loss(0,0,beta))
+        #         else:
+        #             model.vae.compile(optimizer, loss=KL_Loss(model.mean,model.std,beta))
+        model.vae.fit(np.atleast_3d(new_data),
+                      np.atleast_3d(new_data),
+                      batch_size, epochs=training_epochs, callbacks=[checkpoint])
+
+        #        total_loss = hist.history['loss'][0]
+
+        #        best_loss = total_loss
+        filepath = folder + '/triple_phase_weights2_epochs=' + np.str(i) + '.hdf5'
+        model.vae.save_weights(filepath)
 
 
 

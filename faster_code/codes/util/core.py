@@ -207,6 +207,47 @@ def embedding_maps(data, image, colorbar_shown=True,
 
     return fig
 
+class global_scaler:
+
+
+
+    def fit(self, data):
+
+    # calculate the mean and standard deviation of the input array
+        self.mean = np.mean(data.reshape(-1))
+        self.std = np.std(data.reshape(-1))
+
+    def fit_transform(self, data):
+        """
+
+        :param data: the input array
+        :type data: array
+        :return: the data get through the normalization
+        :rtype: array
+        """
+        self.fit(data)
+        return self.transform(data)
+
+    def transform(self, data):
+        """
+
+        :param data: the input data
+        :type: array
+        :return: the data get through the normalization
+        :rtype: array
+        """
+        return (data - self.mean) / self.std
+
+    def inverse_transform(self, data):
+        """
+
+        :param data: the normalized array
+        :type: array
+        :return: the same scale of the raw data
+        :rtype: array
+        """
+        return (data * self.std) + self.mean
+
 printing = {'PNG':True,
             'EPS':False,
            'dpi': 300}
@@ -255,6 +296,28 @@ class generator:
                          ylabel='',
                          xvalues=None
                          ):
+        """
+
+        :param folder: folder where to save
+        :type folder: string
+        :param ranges: range of the each embedding value
+        :type ranges: list
+        :param number_of_loops: embedding range divided by step size of it
+        :type number_of_loops: int
+        :param averaging_number: number of index which is nearest to the current value
+        :type averaging_number: int
+        :param graph_layout: format of output graph
+        :type graph_layout: list
+        :param y_lim: set the y scale
+        :type y_lim: list
+        :param xlabel: set the label of x axis
+        :type xlabel; string
+        :param ylabel: set the label of y axis
+        :type ylabel: string
+        :param xvalues: set the x axis
+        :type xvalues: array
+
+        """
         folder = make_folder(folder)
         for i in tqdm(range(number_of_loops)):
             # builds the figure
@@ -334,3 +397,4 @@ class generator:
             savefig(pjoin(folder, f'{i:04d}_maps'), printing)
 
             plt.close(fig)
+
