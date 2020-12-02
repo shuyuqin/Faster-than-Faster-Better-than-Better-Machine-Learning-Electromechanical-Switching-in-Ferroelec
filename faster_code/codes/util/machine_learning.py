@@ -219,7 +219,7 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
         del (model)
         model = model_builder(np.atleast_3d(new_data), embedding=16,
                               VAE=True, l1_norm_embedding=1e-5, coef=beta)
-        run_id = '_beta_step_size='+str(beta_per_increase)+'_'+ np.str(model.embedding) + '_layer_size_' + np.str(
+        run_id = 'beta='+str(beta)+'_beta_step_size='+str(beta_per_increase)+'_'+ np.str(model.embedding) + '_layer_size_' + np.str(
             model.layer_size) + '_l1_norm_' + np.str(model.l1_norm) + '_l1_norm_' + np.str(
             model.l1_norm_embedding) + '_VAE_' + np.str(model.VAE)
         folder = folder_ + '_' + run_id
