@@ -277,6 +277,13 @@ class generator:
             self.embeddings = model.encoder_model.predict(np.atleast_3d(scaled_data))
             self.predict = predictor
             self.vector_length = scaled_data.shape[1]
+        elif isinstance(model, type(model_builder_combine(np.atleast_3d(scaled_data)))):
+            def predictor(values):
+                return model.decoder_model.predict(np.atleast_2d(values))
+
+            self.embeddings = model.encoder_model.predict(np.atleast_3d(scaled_data))
+            self.predict = predictor
+            self.vector_length = scaled_data.shape[1]
         else:
             raise Exception('The model is not an included model type ')
 
