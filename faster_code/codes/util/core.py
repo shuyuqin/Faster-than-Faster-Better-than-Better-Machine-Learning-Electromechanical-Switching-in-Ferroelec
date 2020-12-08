@@ -46,9 +46,9 @@ def generate_data(values, function=non_linear_fn, length=25, range_=[-1, 1]):
     """
 
     # build x vector
-    x = np.linspace(range_[0], range_[1], 25)
+    x = np.linspace(range_[0], range_[1], length)
 
-    data = np.zeros((values.shape[0], 25))
+    data = np.zeros((values.shape[0], length))
 
     for i in range(values.shape[0]):
         data[i, :] = function(x, values[i, 0], values[i, 1], values[i, 2])
