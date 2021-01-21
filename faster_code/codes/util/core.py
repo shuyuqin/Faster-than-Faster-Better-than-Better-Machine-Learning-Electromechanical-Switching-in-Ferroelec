@@ -111,7 +111,7 @@ def rotate_and_crop(image_, angle=60.46, frac_rm=0.17765042979942694):
 
 
 
-def layout_fig(graph, mod=None):
+def layout_fig(graph, mod=None,x=1,y=1):
 
     """
     function
@@ -148,7 +148,7 @@ def layout_fig(graph, mod=None):
 
     # builds the figure based on the number of graphs and selected number of columns
     fig, axes = plt.subplots(graph // mod + (graph % mod > 0), mod,
-                             figsize=(3 * mod, 3 * (graph // mod + (graph % mod > 0))))
+                             figsize=(3 * mod*x, y*3 * (graph // mod + (graph % mod > 0))))
 
     # deletes extra unneeded axes
     axes = axes.reshape(-1)
