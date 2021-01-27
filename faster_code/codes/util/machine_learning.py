@@ -13,6 +13,8 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 import tensorflow.keras as keras
+import os
+from .file import *
 
 
 
@@ -358,10 +360,12 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
         del (model)
         model = model_builder(np.atleast_3d(new_data), embedding=16,
                               VAE=True, l1_norm_embedding=1e-5, coef=beta)
-        run_id = 'beta='+str(beta)+'_beta_step_size='+str(beta_per_increase)+'_'+ np.str(model.embedding) + '_layer_size_' + np.str(
+        beta = format(beta, '.4f')
+        run_id = 'beta='+beta+'_beta_step_size='+str(beta_per_increase)+'_'+ np.str(model.embedding) + '_layer_size_' + np.str(
             model.layer_size) + '_l1_norm_' + np.str(model.l1_norm) + '_l1_norm_' + np.str(
             model.l1_norm_embedding) + '_VAE_' + np.str(model.VAE)
-        folder = folder_ + '_' + run_id
+        folder = folder_ + '/' + run_id
+        make_folder(folder)
         #
         # if i==30:
         #            filepath = 'piezoresponse+resonacnce_1/beta=0.0725__beta_step_siez=0.0025_16_layer_size_128_l1_norm_0_l1_norm_1e-05_VAE_True/triple_phase_weights2_epochs=29.hdf5'
@@ -387,10 +391,10 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
         # sets the file path
         epoch_begin = i * epoch_per_increase
         if i > 0:
-            filepath = folder + '/phase_shift_only' + np.str(beta) + '_epochs_begin_6000+' + np.str(
+            filepath = folder + '/phase_shift_only' + beta + '_epochs_begin_6000+' + np.str(
                 epoch_begin) + '+{epoch:04d}' + '-{loss:.5f}.hdf5'
         else:
-            filepath = folder + '/phase_shift_only' + np.str(beta) + '_epochs_begin_' + np.str(
+            filepath = folder + '/phase_shift_only' + beta + '_epochs_begin_' + np.str(
                 epoch_begin) + '+{epoch:04d}' + '-{loss:.5f}.hdf5'
 
         # callback for saving checkpoints. Checkpoints are only saved when the model improves
@@ -403,15 +407,21 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
         #             model.vae.compile(optimizer, loss=KL_Loss(0,0,beta))
         #         else:
         #             model.vae.compile(optimizer, loss=KL_Loss(model.mean,model.std,beta))
-        model.vae.fit(np.atleast_3d(new_data),
+        hist = model.vae.fit(np.atleast_3d(new_data),
                       np.atleast_3d(new_data),
                       batch_size, epochs=training_epochs, callbacks=[checkpoint])
 
         #        total_loss = hist.history['loss'][0]
 
         #        best_loss = total_loss
-        filepath = folder + '/triple_phase_weights2_epochs=' + np.str(i) + '.hdf5'
-        model.vae.save_weights(filepath)
+        min_loss = np.min(hist.history['loss'])
+        user_input = folder
+        directory = os.listdir(user_input)
+        searchString = format(min_loss, '.5f')
+        for fname in directory:  # change directory as needed
+            if searchString in fname:
+                f = fname
+                filepath = user_input + '/' + str(f)
 
 
 
