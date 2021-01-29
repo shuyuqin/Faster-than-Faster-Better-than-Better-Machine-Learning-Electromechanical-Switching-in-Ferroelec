@@ -4,9 +4,10 @@
 
 import tensorflow as tf
 import numpy as np
+from moviepy.tools import verbose_print
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import ndimage
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from sklearn.decomposition import DictionaryLearning
 from tqdm import tqdm
 from .file import *
@@ -405,3 +406,103 @@ class generator:
 
             plt.close(fig)
 
+def embedding_maps(data, printing, plot_format, folder, beta,loss,verbose=False,
+                   filename='./embedding_maps', num_of_plots=True, ranges=None):
+    """
+    plots the embedding maps from a neural network
+
+    Parameters
+    ----------
+    data : raw data to plot of embeddings
+        data of embeddings
+    printing : dictionary
+        contains information for printing
+        'dpi': int
+            resolution of exported image
+        print_EPS : bool
+            selects if export the EPS
+        print_PNG : bool
+            selects if print the PNG
+    plot_format  : dict
+        sets the plot format for the images
+    folder : string
+        set the folder where to export the images
+    verbose : bool (optional)
+        sets if the code should report information
+    letter_labels : bool (optional)
+        sets is labels should be included
+    filename : string (optional)
+        sets the filename for saving
+    num_of_plots : int, optional
+            number of principal components to show
+    ranges : float, optional
+            sets the clim of the images
+
+    return
+    ----------
+
+    fig : object
+        the figure pointer
+    """
+
+    # number of plots to show, if not provided shows all
+    if num_of_plots:
+        num_of_plots = data.shape[data.ndim - 1]
+
+    # creates the figures and axes in a pretty way
+    fig, ax = layout_fig(num_of_plots, mod=4)
+    title_name = 'beta='+beta+'_loss='+loss
+    fig.suptitle(title_name,fontsize=12)
+
+    # resizes the array for hyperspectral data
+#    print(data.shape)
+    if data.ndim == 3:
+        original_size = data.shape[0].astype(int)
+        data = data.reshape(-1, data.shape[2])
+        verbose_print(verbose, 'shape of data resized to [{0} x {1}]'.format(
+            data.shape[0], data.shape[1]))
+    elif data.ndim == 2:
+        original_size = np.sqrt(data.shape[0]).astype(int)
+    else:
+        raise ValueError("data is of an incorrect size")
+
+    # plots all of the images
+    for i in range(num_of_plots):
+        if plot_format['rotation']:
+            image, scalefactor = rotate_and_crop(data[:, i].reshape(original_size, original_size),
+                                                 angle=plot_format['angle'], frac_rm=plot_format['frac_rm'])
+        else:
+            image = data[:, i].reshape(original_size, original_size)
+            scalefactor = 1
+        im = ax[i].imshow(image)
+        ax[i].set_yticklabels('')
+        ax[i].set_xticklabels('')
+
+        if ranges is None:
+            pass
+        else:
+            im.set_clim(0, ranges[i])
+
+        # adds the colorbar
+        if plot_format['color_bars']:
+            divider = make_axes_locatable(ax[i])
+            cax = divider.append_axes('right', size='10%', pad=0.05)
+            cbar = plt.colorbar(im, cax=cax, format='%.1e')
+#            colorbar(ax[i], im)
+
+        # labels figures
+        # if letter_labels:
+        #     labelfigs(ax[i], i)
+        # labelfigs(ax[i], i, string_add='emb. {0}'.format(i + 1), loc='bm')
+
+        # adds the scalebar
+        # if plot_format['add_scalebar'] is not False:
+        #     scalebar(ax[i], plot_format['scalebar'][0] * scalefactor,
+        #              plot_format['scalebar'][1])
+
+    plt.tight_layout(pad=1)
+
+    # saves the figure
+    savefig(folder + '/' + filename, printing)
+
+    return(fig)

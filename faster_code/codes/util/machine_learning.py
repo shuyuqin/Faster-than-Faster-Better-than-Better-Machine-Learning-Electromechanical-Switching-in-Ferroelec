@@ -425,6 +425,37 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
 
 
 
+def get_ith_layer_output(model, X, i, mode='test'):
+    """
+    Computes the activations of a specific layer
+    see https://keras.io/getting-started/faq/#keras-faq-frequently-asked-keras-questions'
+
+
+    Parameters
+    ----------
+    model : keras model, object
+        pre-trained keras model
+    X  : numpy array, float
+        Input data
+    i  : numpy, int
+        index of the layer to extract
+    mode : string, optional
+        test or train, changes the model behavior to scale the network properly when using
+        dropout or batchnorm
+    Returns
+    -------
+    layer_output : float
+        array containing the output from layer i of the network
+    """
+    # computes the output of the ith layer
+#     get_ith_layer = keras.backend.function(
+#         [model.layers[0].input, keras.backend.learning_phase()], [model.layers[i].output])
+    get_ith_layer = tf.keras.backend.function(model.layers[0].input, model.layers[i].output)
+#    layer_output = get_ith_layer([X, 0 if mode == 'test' else 1])[0]
+    layer_output = get_ith_layer([X, 0 if mode == 'test' else 1])
+#    print(layer_output.shape)
+    return layer_output
+
 
 
 
