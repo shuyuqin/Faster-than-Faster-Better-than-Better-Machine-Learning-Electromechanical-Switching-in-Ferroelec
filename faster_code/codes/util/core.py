@@ -271,14 +271,8 @@ class generator:
             self.predict = predictor
             self.vector_length = scaled_data.shape[1]
             self.embeddings = model.transform(scaled_data)
-        elif isinstance(model, type(model_builder(np.atleast_3d(scaled_data)))):
-            def predictor(values):
-                return model.decoder_model.predict(np.atleast_2d(values))
+        elif np.atleast_3d(scaled_data).shape[2] <= 2:
 
-            self.embeddings = model.encoder_model.predict(np.atleast_3d(scaled_data))
-            self.predict = predictor
-            self.vector_length = scaled_data.shape[1]
-        elif isinstance(model, type(model_builder_combine(np.atleast_3d(scaled_data)))):
             def predictor(values):
                 return model.decoder_model.predict(np.atleast_2d(values))
 
