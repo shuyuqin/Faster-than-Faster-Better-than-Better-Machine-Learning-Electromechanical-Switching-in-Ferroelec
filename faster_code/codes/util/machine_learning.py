@@ -313,7 +313,7 @@ class model_builder_combine:
         self.vae.add_loss(self.coef * kl_loss)
 
 
-def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
+def Train(epochs,initial_epoch, epoch_per_increase, initial_beta, beta_per_increase
           ,new_data,folder_,ith_epoch=None,file_path=None,batch_size=300):
     """
 
@@ -352,6 +352,8 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
             training_epochs = epochs - epoch_per_increase * (iteration - 1)
             if training_epochs <= 0:
                 break
+        elif i == 0:
+            training_epochs = initial_epoch
         else:
             training_epochs = epoch_per_increase
 
@@ -391,7 +393,7 @@ def Train(epochs, epoch_per_increase, initial_beta, beta_per_increase
         # sets the file path
         epoch_begin = i * epoch_per_increase
         if i > 0:
-            filepath = folder + '/phase_shift_only' + beta + '_epochs_begin_6000+' + np.str(
+            filepath = folder + '/phase_shift_only' + beta + '_epochs_begin_'+str(initial_epoch) +'+'+ np.str(
                 epoch_begin) + '+{epoch:04d}' + '-{loss:.5f}.hdf5'
         else:
             filepath = folder + '/phase_shift_only' + beta + '_epochs_begin_' + np.str(
