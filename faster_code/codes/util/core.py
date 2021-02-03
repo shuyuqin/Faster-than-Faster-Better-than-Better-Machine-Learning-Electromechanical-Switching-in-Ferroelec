@@ -400,7 +400,7 @@ class generator:
 
             plt.close(fig)
 
-def embedding_maps(data, printing, plot_format, folder, beta,loss,verbose=False,
+def embedding_maps_movie(data, printing, plot_format, folder, beta,loss,verbose=False,
                    filename='./embedding_maps', num_of_plots=True, ranges=None):
     """
     plots the embedding maps from a neural network
