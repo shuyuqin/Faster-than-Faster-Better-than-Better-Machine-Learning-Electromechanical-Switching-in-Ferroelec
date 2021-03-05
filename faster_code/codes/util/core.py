@@ -382,7 +382,10 @@ class generator:
                 else:
                     if len(generated.shape)==1:
                         generated = generated.reshape(int(len(generated)/2),2)
-                        xvalues = range(int(self.vector_length/2))
+                        if len(xvalues) !=  generated.shape[0]:
+                            xvalues = range(int(self.vector_length / 2))
+
+
 
                     ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
