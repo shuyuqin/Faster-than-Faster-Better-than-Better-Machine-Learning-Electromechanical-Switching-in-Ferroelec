@@ -293,6 +293,7 @@ class generator:
                          number_of_loops=200,
                          averaging_number=100,
                          graph_layout=[3, 3],
+                         model_tpye = 'dl',
                          y_lim=[-2, 2],
                          xlabel='Voltage (V)',
                          ylabel='',
@@ -325,7 +326,10 @@ class generator:
             # builds the figure
             # fig, ax = plt.subplots(graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0), graph_layout[1],
             #                       figsize=(3 * graph_layout[1], 3 * (graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0))))
-            fig, ax = layout_fig(graph_layout[0] * 3, mod=graph_layout[1])
+            if model_tpye == 'dl':
+                fig, ax = layout_fig(graph_layout[0] * 2, mod=graph_layout[1])
+            else:
+                fig, ax = layout_fig(graph_layout[0] * 3, mod=graph_layout[1])
             ax = ax.reshape(-1)
             # loops around all of the embeddings
             for j, channel in enumerate(self.channels):
@@ -359,26 +363,41 @@ class generator:
                 generated = self.predict(gen_value).squeeze()
                 # plots the graph
 
+
+
                 # image_,angle_ = rotate_and_crop(self.embeddings[:, channel].reshape(self.image.shape[0:2]))
                 ax[j].imshow(self.embeddings[:, channel].reshape(self.image.shape[0:2]), clim=ranges[channel])
                 #                ax[j].imshow(image_, )
                 ax[j].set_yticklabels('')
                 ax[j].set_xticklabels('')
 
-                ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
-                # formats the graph
-                ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
-                #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
-                ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
-                ax[j + len(self.channels)].set_xlabel(xlabel)
-
-                ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1],
+                if model_tpye=='dl':
+                    ax[j + len(self.channels)].plot(xvalues, generated,
                                                     color=self.cmap((i + 1) / number_of_loops))
-                # formats the graph
-                ax[j + len(self.channels) * 2].set_ylim(y_lim[0], 1.6 * y_lim[1])
-                #      ax[j+len(self.channels)*2].set_yticklabels('Resonance (KHz)')
-                ax[j + len(self.channels) * 2].set_ylabel('Resonance (KHz)')
-                ax[j + len(self.channels) * 2].set_xlabel(xlabel)
+                    # formats the graph
+                    ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
+                    #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
+                    ax[j + len(self.channels)].set_ylabel('Amplitude of Spectural')
+                    ax[j + len(self.channels)].set_xlabel(xlabel)
+                else:
+                    if len(generated.shape)==1:
+                        generated = generated.reshape(int(len(generated)/2),2)
+                        xvalues = range(int(self.vector_length/2))
+
+                    ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
+                    # formats the graph
+                    ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
+                    #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
+                    ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
+                    ax[j + len(self.channels)].set_xlabel(xlabel)
+
+                    ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1],
+                                                        color=self.cmap((i + 1) / number_of_loops))
+                    # formats the graph
+                    ax[j + len(self.channels) * 2].set_ylim(y_lim[0], 1.6 * y_lim[1])
+                    #      ax[j+len(self.channels)*2].set_yticklabels('Resonance (KHz)')
+                    ax[j + len(self.channels) * 2].set_ylabel('Resonance (KHz)')
+                    ax[j + len(self.channels) * 2].set_xlabel(xlabel)
 
                 # gets the position of the axis on the figure
                 # pos = ax[j].get_position()
