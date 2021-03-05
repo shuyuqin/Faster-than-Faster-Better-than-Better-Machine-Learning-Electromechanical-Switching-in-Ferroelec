@@ -381,7 +381,9 @@ class generator:
                     ax[j + len(self.channels)].set_xlabel(xlabel)
                 else:
                     if len(generated.shape)==1:
-                        generated = generated.reshape(int(len(generated)/2),2)
+                        generated_1 = generated[:int(len(generated)/2)].reshape(int(len(generated)/2,1))
+                        generated_2 = generated[int(len(generated)/2):].reshape(int(len(generated)/2,1))
+                        generated = np.concatenate((generated_1,generated_2),axis=1)
                         if len(xvalues) !=  generated.shape[0]:
                             xvalues = range(int(self.vector_length / 2))
 
