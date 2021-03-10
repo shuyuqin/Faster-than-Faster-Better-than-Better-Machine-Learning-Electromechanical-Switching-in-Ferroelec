@@ -132,12 +132,12 @@ class model_builder:
             X = layers.ActivityRegularization(l1=self.l1_norm_embedding * 10 ** (self.coef))(X)
             z_mean = layers.Dense(self.embedding, name="z_mean")(X)
             z_log_var = layers.Dense(self.embedding, name="z_log_var")(X)
-            self.sampling = Sampling()((z_mean, z_log_var))
+            sampling = Sampling()((z_mean, z_log_var))
             # update the self.mean and self.std:
         #            self.mean = z_mean
         #            self.std = z_log_var
 
-        self.encoder_model = Model(inputs=encoder_input, outputs=self.sampling, name='LSTM_encoder')
+        self.encoder_model = Model(inputs=encoder_input, outputs=sampling, name='LSTM_encoder')
 
         decoder_input = layers.Input(shape=(self.embedding,), name="z_sampling")
 
@@ -162,7 +162,7 @@ class model_builder:
 
         self.decoder_model = Model(inputs=decoder_input, outputs=X, name='LSTM_encoder')
 
-        outputs = self.decoder_model(self.sampling)
+        outputs = self.decoder_model(sampling)
 
         self.vae = tf.keras.Model(inputs=encoder_input, outputs=outputs, name="vae")
 
@@ -274,12 +274,12 @@ class model_builder_combine:
             X = layers.ActivityRegularization(l1=self.l1_norm_embedding * 10 ** (self.coef))(X)
             z_mean = layers.Dense(self.embedding, name="z_mean")(X)
             z_log_var = layers.Dense(self.embedding, name="z_log_var")(X)
-            self.sampling = Sampling()((z_mean, z_log_var))
+            sampling = Sampling()((z_mean, z_log_var))
             # update the self.mean and self.std:
         #            self.mean = z_mean
         #            self.std = z_log_var
 
-        self.encoder_model = Model(inputs=encoder_input, outputs=self.sampling, name='LSTM_encoder')
+        self.encoder_model = Model(inputs=encoder_input, outputs=sampling, name='LSTM_encoder')
 
         decoder_input = layers.Input(shape=(self.embedding,), name="z_sampling")
 
@@ -304,7 +304,7 @@ class model_builder_combine:
 
         self.decoder_model = Model(inputs=decoder_input, outputs=X, name='LSTM_encoder')
 
-        outputs = self.decoder_model(self.sampling)
+        outputs = self.decoder_model(sampling)
 
         self.vae = tf.keras.Model(inputs=encoder_input, outputs=outputs, name="vae")
 

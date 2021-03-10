@@ -7,6 +7,19 @@ from os.path import join as pjoin
 import matplotlib.pyplot as plt
 import glob
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+import random
+import tensorflow as tf
+import numpy as np
+
+def set_seeds(seed=42):
+    """
+    :param seed: random value to set the sequence of the shuffle and random normalization
+
+    """
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    tf.random.set_seed(seed)
+    np.random.seed(seed)
 
 
 def make_folder(folder, **kwargs):
