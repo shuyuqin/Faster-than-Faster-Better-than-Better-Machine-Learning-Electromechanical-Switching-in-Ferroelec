@@ -455,7 +455,7 @@ def get_activations(model, X=[], i=[], mode='test'):
         print(f'activations {model} loaded from saved file')
     else:
         # computes the output of the ith layer
-        activation = get_ith_layer_output(model, np.atleast_3d(X), i, model)
+        activation = get_ith_layer_output(model, np.atleast_3d(X), i, mode)
 
     return activation
 

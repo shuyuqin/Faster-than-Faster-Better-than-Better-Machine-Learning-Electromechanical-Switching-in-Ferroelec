@@ -565,8 +565,7 @@ def training_images(model,
         model.load_weights(file_list)
 
         # Computes the low dimensional layer
-        embedding_exported[name_extraction(file_list)] = get_activations(model,
-                                                                         data, number_layers)
+        embedding_exported[name_extraction(file_list)] = get_activations(model, data, number_layers)
 
         # plots the embedding maps
         _ = embedding_maps_movie(embedding_exported[name_extraction(file_list)], image,printing_,
