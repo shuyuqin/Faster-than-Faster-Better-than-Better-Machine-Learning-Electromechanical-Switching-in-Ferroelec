@@ -12,7 +12,11 @@ from sklearn.decomposition import DictionaryLearning
 from tqdm import tqdm
 from .file import *
 from .machine_learning import *
+from natsort import natsorted, ns
 
+printing = {'PNG':True,
+            'EPS':False,
+           'dpi': 300}
 
 def non_linear_fn(t, x, y, z):
   # returns a function from variables
@@ -425,8 +429,8 @@ class generator:
 
             plt.close(fig)
 
-def embedding_maps_movie(data, printing, plot_format, folder, beta,loss,verbose=False,
-                   filename='./embedding_maps', num_of_plots=True, ranges=None):
+def embedding_maps_movie(data, image, printing, folder, beta,loss,
+                   filename='./embedding_maps', c_lim=None,mod=4,colorbar_shown=True):
     """
     plots the embedding maps from a neural network
 
@@ -464,64 +468,110 @@ def embedding_maps_movie(data, printing, plot_format, folder, beta,loss,verbose=
         the figure pointer
     """
 
-    # number of plots to show, if not provided shows all
-    if num_of_plots:
-        num_of_plots = data.shape[data.ndim - 1]
 
     # creates the figures and axes in a pretty way
-    fig, ax = layout_fig(num_of_plots, mod=4)
+    fig, ax = layout_fig(data.shape[1], mod)
     title_name = 'beta='+beta+'_loss='+loss
     fig.suptitle(title_name,fontsize=12)
+    for i, ax in enumerate(ax):
+        if i < data.shape[1]:
+            im = ax.imshow(data[:, i].reshape(image.shape[0], image.shape[1]))
+            ax.set_xticklabels('')
+            ax.set_yticklabels('')
 
-    # resizes the array for hyperspectral data
-#    print(data.shape)
-    if data.ndim == 3:
-        original_size = data.shape[0].astype(int)
-        data = data.reshape(-1, data.shape[2])
-        verbose_print(verbose, 'shape of data resized to [{0} x {1}]'.format(
-            data.shape[0], data.shape[1]))
-    elif data.ndim == 2:
-        original_size = np.sqrt(data.shape[0]).astype(int)
-    else:
-        raise ValueError("data is of an incorrect size")
-
-    # plots all of the images
-    for i in range(num_of_plots):
-        if plot_format['rotation']:
-            image, scalefactor = rotate_and_crop(data[:, i].reshape(original_size, original_size),
-                                                 angle=plot_format['angle'], frac_rm=plot_format['frac_rm'])
-        else:
-            image = data[:, i].reshape(original_size, original_size)
-            scalefactor = 1
-        im = ax[i].imshow(image)
-        ax[i].set_yticklabels('')
-        ax[i].set_xticklabels('')
-
-        if ranges is None:
-            pass
-        else:
-            im.set_clim(0, ranges[i])
-
-        # adds the colorbar
-        if plot_format['color_bars']:
-            divider = make_axes_locatable(ax[i])
+            # adds the colorbar
+        if colorbar_shown == True:
+            divider = make_axes_locatable(ax)
             cax = divider.append_axes('right', size='10%', pad=0.05)
             cbar = plt.colorbar(im, cax=cax, format='%.1e')
-#            colorbar(ax[i], im)
 
-        # labels figures
-        # if letter_labels:
-        #     labelfigs(ax[i], i)
-        # labelfigs(ax[i], i, string_add='emb. {0}'.format(i + 1), loc='bm')
+            # Sets the scales
+            if c_lim is not None:
+                im.set_clim(c_lim)
 
-        # adds the scalebar
-        # if plot_format['add_scalebar'] is not False:
-        #     scalebar(ax[i], plot_format['scalebar'][0] * scalefactor,
-        #              plot_format['scalebar'][1])
+    # plots all of the images
 
-    plt.tight_layout(pad=1)
+
+
+    fig.tight_layout()
 
     # saves the figure
     savefig(folder + '/' + filename, printing)
 
     return(fig)
+
+
+def training_images(model,
+                    data,
+                    image,
+                    number_layers,
+                    model_folder,
+                    beta,
+                    printing,
+                    folder,
+                    file_name):
+    """
+    plots the training images
+
+    Parameters
+    ----------
+    model : tensorflow object
+        neural network model
+    data : float, array
+        sets the line graph to plot
+    model_folder : float, array
+        sets the embedding map to plot
+    printing : dictionary
+        contains information for printing
+        'dpi': int
+            resolution of exported image
+        print_EPS : bool
+            selects if export the EPS
+        print_PNG : bool
+            selects if print the PNG
+    plot_format  : dict
+        sets the plot format for the images
+    folder : string
+        set the folder where to export the images
+    data_type : string (optional)
+        sets the type of data which is used to construct the filename
+
+    """
+
+    # makes a copy of the format information to modify
+    printing_ = printing.copy()
+
+
+    # sets to remove the color bars and not to print EPS
+
+    printing_['EPS'] = False
+
+    # simple function to help extract the filename
+    def name_extraction(filename):
+        filename = file_list[0].split('/')[-1][:-5]
+        return filename
+
+    embedding_exported = {}
+
+    # searches the folder and finds the files
+    file_list = glob.glob(model_folder + '/phase_shift_only*')
+    file_list = natsorted(file_list, key=lambda y: y.lower())
+
+    for i, file_list in enumerate(file_list):
+        # load beta and loss value
+        loss_ = file_list[-12:-5]
+
+        # loads the weights into the model
+        model.load_weights(file_list)
+
+        # Computes the low dimensional layer
+        embedding_exported[name_extraction(file_list)] = get_activations(model,
+                                                                         data, number_layers)
+
+        # plots the embedding maps
+        _ = embedding_maps_movie(embedding_exported[name_extraction(file_list)], image,printing_,
+                           folder, beta, loss_, filename='./' + file_name + '_epoch_{0:04}'.format(i))
+
+        # Closes the figure
+        plt.close(_)
+

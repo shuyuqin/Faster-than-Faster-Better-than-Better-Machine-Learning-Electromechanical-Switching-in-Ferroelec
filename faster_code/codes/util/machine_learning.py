@@ -426,6 +426,40 @@ def Train(epochs,initial_epoch, epoch_per_increase, initial_beta, beta_per_incre
                 filepath = user_input + '/' + str(f)
 
 
+def get_activations(model, X=[], i=[], mode='test'):
+    """
+    function to get the activations of a specific layer
+    this function can take either a model and compute the activations or can load previously
+    generated activations saved as an numpy array
+
+    Parameters
+    ----------
+    model : keras model, object
+        pre-trained keras model
+    X  : numpy array, float
+        Input data
+    i  : numpy, int
+        index of the layer to extract
+    mode : string, optional
+        test or train, changes the model behavior to scale the network properly when using
+        dropout or batchnorm
+
+    Returns
+    -------
+    activation : float
+        array containing the output from layer i of the network
+    """
+    # if a string is passed loads the activations from a file
+    if isinstance(model, str):
+        activation = np.load(model)
+        print(f'activations {model} loaded from saved file')
+    else:
+        # computes the output of the ith layer
+        activation = get_ith_layer_output(model, np.atleast_3d(X), i, model)
+
+    return activation
+
+
 
 def get_ith_layer_output(model, X, i, mode='test'):
     """
