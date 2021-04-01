@@ -494,7 +494,7 @@ def embedding_maps_movie(data, image, printing, folder, beta,loss,
 
 
     fig.tight_layout()
-    fig.set_size_inches(12, 11.7)
+    fig.set_size_inches(13, 13)
     # saves the figure
     savefig(folder + '/' + filename, printing)
 
