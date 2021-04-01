@@ -472,7 +472,7 @@ def embedding_maps_movie(data, image, printing, folder, beta,loss,
     # creates the figures and axes in a pretty way
     fig, ax = layout_fig(data.shape[1], mod)
     title_name = 'beta='+beta+'_loss='+loss
-    fig.suptitle(title_name,fontsize=12)
+    fig.suptitle(title_name,fontsize=12,y=1.02)
     for i, ax in enumerate(ax):
         if i < data.shape[1]:
             im = ax.imshow(data[:, i].reshape(image.shape[0], image.shape[1]))
