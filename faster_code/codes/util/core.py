@@ -396,7 +396,7 @@ class generator:
 
                     ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
-                    ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
+                    ax[j + len(self.channels)].set_ylim(1.6*y_lim[0], 1.6*y_lim[1])
                     #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_xlabel(xlabel)
