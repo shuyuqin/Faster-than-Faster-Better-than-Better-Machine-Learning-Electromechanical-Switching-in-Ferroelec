@@ -570,7 +570,7 @@ def training_images(model,
 
         # plots the embedding maps
         _ = embedding_maps_movie(embedding_exported[name_extraction(file_list)], image,printing_,
-                           folder, beta, loss_, filename='./' + file_name + '_epoch_{0:04}'.format(i+1007))
+                           folder, beta, loss_, filename='./' + file_name + '_epoch_{0:04}'.format(i))
 
         # Closes the figure
         plt.close(_)
