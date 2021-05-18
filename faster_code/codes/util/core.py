@@ -299,6 +299,7 @@ class generator:
                          graph_layout=[3, 3],
                          model_tpye = 'dl',
                          y_lim=[-2, 2],
+                         y_lim_1 = [-2,2],
                          xlabel='Voltage (V)',
                          ylabel='',
                          xvalues=None
@@ -396,7 +397,7 @@ class generator:
 
                     ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
-                    ax[j + len(self.channels)].set_ylim(1.6*y_lim[0], 1.6*y_lim[1])
+                    ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
                     #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_xlabel(xlabel)
@@ -404,7 +405,7 @@ class generator:
                     ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1],
                                                         color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
-                    ax[j + len(self.channels) * 2].set_ylim(y_lim[0], 1.6 * y_lim[1])
+                    ax[j + len(self.channels) * 2].set_ylim(y_lim_1[0], y_lim_1[1])
                     #      ax[j+len(self.channels)*2].set_yticklabels('Resonance (KHz)')
                     ax[j + len(self.channels) * 2].set_ylabel('Resonance (KHz)')
                     ax[j + len(self.channels) * 2].set_xlabel(xlabel)
