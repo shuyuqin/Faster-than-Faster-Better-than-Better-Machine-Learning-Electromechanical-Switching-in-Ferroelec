@@ -170,11 +170,12 @@ class model_builder:
         kl_loss = -0.5 * tf.reduce_mean(z_log_var - tf.square(z_mean) - tf.exp(z_log_var) + 1)
         self.vae.add_loss(self.coef * kl_loss)
 
+
 class model_builder_combine:
 
     def __init__(self,
                  input_data,
-                 drop_frac=0.2,
+                 drop_frac=0.0,
                  layer_size=128,
                  num_ident_blocks=3,
                  l1_norm=0,
@@ -268,22 +269,31 @@ class model_builder_combine:
         #     X = layers.BatchNormalization(axis=1, name='last_encode')(X)
         X = layers.Activation('relu')(X)
 
-        if self.VAE:
-            X = layers.Dense(self.embedding, name="embedding_pre")(X)
-            X = layers.Activation('relu')(X)
-            X = layers.ActivityRegularization(l1=self.l1_norm_embedding * 10 ** (self.coef))(X)
-            z_mean = layers.Dense(self.embedding, name="z_mean")(X)
-            z_log_var = layers.Dense(self.embedding, name="z_log_var")(X)
-            sampling = Sampling()((z_mean, z_log_var))
-            # update the self.mean and self.std:
+        #    if self.VAE:
+
+        #    if self.VAE:
+        X = layers.Dense(self.embedding, name="embedding_pre")(X)
+        X = layers.Activation('relu')(X)
+        Embedding_out = layers.ActivityRegularization(l1=self.l1_norm_embedding * 10 ** (self.coef))(X)
+        z_mean = layers.Dense(self.embedding, name="z_mean")(Embedding_out)
+        z_log_var = layers.Dense(self.embedding, name="z_log_var")(Embedding_out)
+
+        # update the self.mean and self.std:
         #            self.mean = z_mean
         #            self.std = z_log_var
 
-        self.encoder_model = Model(inputs=encoder_input, outputs=sampling, name='LSTM_encoder')
+        self.encoder_model = Model(inputs=encoder_input,
+                                   outputs=[Embedding_out, z_mean, z_log_var], name='LSTM_encoder')
 
-        decoder_input = layers.Input(shape=(self.embedding,), name="z_sampling")
+        #      decoder_input = layers.Input(shape=(self.embedding,), name="z_sampling")
+        decoder_mean = layers.Input(shape=(self.embedding,), name="z_mean")
+        decoder_log = layers.Input(shape=(self.embedding,), name="z_log")
+        sampling = Sampling()((decoder_mean, decoder_log))
 
-        z = layers.Dense(self.embedding, name="embedding")(decoder_input)
+        #         self.encoder_model = Model(inputs=encoder_input,
+        #                                outputs=sampling, name='LSTM_encoder')
+
+        z = layers.Dense(self.embedding, name="embedding")(sampling)
         z = layers.Activation('relu')(z)
         z = layers.ActivityRegularization(l1=self.l1_norm_embedding * 10 ** (self.coef))(z)
 
@@ -302,9 +312,9 @@ class model_builder_combine:
         #     X = layers.LayerNormalization(axis=1, name='batch_normal')(X)
         X = layers.TimeDistributed(Dense(2, activation='linear'))(X)
 
-        self.decoder_model = Model(inputs=decoder_input, outputs=X, name='LSTM_encoder')
+        self.decoder_model = Model(inputs=[decoder_mean, decoder_log], outputs=X, name='LSTM_encoder')
 
-        outputs = self.decoder_model(sampling)
+        outputs = self.decoder_model([z_mean, z_log_var])
 
         self.vae = tf.keras.Model(inputs=encoder_input, outputs=outputs, name="vae")
 
