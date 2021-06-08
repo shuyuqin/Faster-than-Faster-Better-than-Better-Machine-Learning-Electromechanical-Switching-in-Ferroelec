@@ -267,6 +267,7 @@ class generator:
         self.image = image
         # defines the colorlist
         self.cmap = plt.get_cmap(color_map)
+        self.modified_model = None
 
         if isinstance(model, type(DictionaryLearning())):
             def predictor(values):
@@ -275,12 +276,25 @@ class generator:
             self.predict = predictor
             self.vector_length = scaled_data.shape[1]
             self.embeddings = model.transform(scaled_data)
-        elif np.atleast_3d(scaled_data).shape[2] <= 2:
+        elif np.atleast_3d(scaled_data).shape[2] == 1:
 
             def predictor(values):
                 return model.decoder_model.predict(np.atleast_2d(values))
 
             self.embeddings = model.encoder_model.predict(np.atleast_3d(scaled_data))
+            self.predict = predictor
+            self.vector_length = scaled_data.shape[1]
+
+        elif np.atleast_3d(scaled_data).shape[2] == 2:
+            self.modified_model = 1
+
+            def predictor(means, stds):
+
+                return model.decoder_model.predict([np.atleast_2d(means), np.atleast_2d(stds)])
+
+            self.emb_, self.mean, self.std = model.encoder_model.predict(np.atleast_3d(scaled_data))
+            self.embeddings_tf = Sampling()([self.mean, self.std])
+            self.embeddings = self.embeddings_tf.numpy()
             self.predict = predictor
             self.vector_length = scaled_data.shape[1]
         else:
@@ -297,7 +311,7 @@ class generator:
                          number_of_loops=200,
                          averaging_number=100,
                          graph_layout=[3, 3],
-                         model_tpye = 'dl',
+                         model_tpye = 'dog',
                          y_lim=[-2, 2],
                          y_lim_1 = [-2,2],
                          xlabel='Voltage (V)',
@@ -360,12 +374,35 @@ class generator:
                     value[i],
                     averaging_number)
                 # computes the mean of the selected index
-                gen_value = np.mean(self.embeddings[idx], axis=0)
-                # specifically updates the value of the embedding to visualize based on the
-                # linear spaced vector
-                gen_value[channel] = value[i]
-                # generates the loop based on the model
-                generated = self.predict(gen_value).squeeze()
+
+                if self.modified_model != None:
+                    gen_mean = np.mean(self.mean[idx], axis=0)
+                    gen_std = np.mean(self.std[idx], axis=0)
+
+                    mn_ranges = np.stack((np.min(self.mean, axis=0),
+                                          np.max(self.mean, axis=0)), axis=1)
+                    sd_ranges = np.stack((np.min(self.std, axis=0),
+                                          np.max(self.std, axis=0)), axis=1)
+
+                    mn_value = np.linspace(mn_ranges[channel][0], mn_ranges[channel][1],
+                                           number_of_loops)
+
+                    sd_value = np.linspace(sd_ranges[channel][0], sd_ranges[channel][1],
+                                           number_of_loops)
+
+                    gen_mean[channel] = mn_value[i]
+
+                    gen_std[channel] = sd_value[i]
+                    generated = self.predict(gen_mean, gen_std).squeeze()
+
+                if self.modified_model == None:
+
+                    gen_value = np.mean(self.embeddings[idx], axis=0)
+                    # specifically updates the value of the embedding to visualize based on the
+                    # linear spaced vector
+                    gen_value[channel] = value[i]
+                    # generates the loop based on the model
+                    generated = self.predict(gen_value).squeeze()
                 # plots the graph
 
 
@@ -376,7 +413,7 @@ class generator:
                 ax[j].set_yticklabels('')
                 ax[j].set_xticklabels('')
 
-                if model_tpye=='dl':
+                if model_tpye=='dog':
                     ax[j + len(self.channels)].plot(xvalues, generated,
                                                     color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
@@ -395,14 +432,15 @@ class generator:
 
 
 
-                    ax[j + len(self.channels)].plot(xvalues, generated[:, 0], color=self.cmap((i + 1) / number_of_loops))
+                    ax[j + len(self.channels)].plot(xvalues, generated[:, 0]*7.859902800847493e-05 -1.0487273116670697e-05
+                                                    , color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
                     ax[j + len(self.channels)].set_ylim(y_lim[0], y_lim[1])
                     #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_ylabel('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_xlabel(xlabel)
 
-                    ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1],
+                    ax[j + len(self.channels) * 2].plot(xvalues, generated[:, 1]*3.1454182388943095+1324.800141637855,
                                                         color=self.cmap((i + 1) / number_of_loops))
                     # formats the graph
                     ax[j + len(self.channels) * 2].set_ylim(y_lim_1[0], y_lim_1[1])
