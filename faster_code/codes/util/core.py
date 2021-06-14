@@ -346,9 +346,9 @@ class generator:
             # fig, ax = plt.subplots(graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0), graph_layout[1],
             #                       figsize=(3 * graph_layout[1], 3 * (graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0))))
             if model_tpye == 'dl':
-                fig, ax = layout_fig(graph_layout[0] * 2, mod=graph_layout[1])
-            else:
                 fig, ax = layout_fig(graph_layout[0] * 3, mod=graph_layout[1])
+            else:
+                fig, ax = layout_fig(graph_layout[0] * 4, mod=graph_layout[1])
             ax = ax.reshape(-1)
             # loops around all of the embeddings
             for j, channel in enumerate(self.channels):
@@ -412,7 +412,7 @@ class generator:
                 #                ax[j].imshow(image_, )
                 ax[j].set_yticklabels('')
                 ax[j].set_xticklabels('')
-
+                y_axis,x_axis = np.histogram(self.embeddings[:,channel],number_of_loops)
                 if model_tpye=='dog':
                     ax[j + len(self.channels)].plot(xvalues, generated,
                                                     color=self.cmap((i + 1) / number_of_loops))
@@ -421,6 +421,10 @@ class generator:
                     #   ax[j+len(self.channels)].set_yticklabels('Piezoresponse (Arb. U.)')
                     ax[j + len(self.channels)].set_ylabel('Amplitude of Spectural')
                     ax[j + len(self.channels)].set_xlabel(xlabel)
+                    ax[j + len(self.channels) * 2].hist(self.embeddings[:,channel],number_of_loops)
+                    ax[j + len(self.channels) * 2].plot(x_axis[i],y_axis[i],'ro')
+                    ax[j + len(self.channels) * 2].set_ylabel('Distribution of Intensity')
+                    ax[j + len(self.channels) * 2].set_xlabel('Range of Intensity')
                 else:
                     if len(generated.shape)==1:
                         new_range = int(len(generated)/2)
@@ -447,6 +451,10 @@ class generator:
                     #      ax[j+len(self.channels)*2].set_yticklabels('Resonance (KHz)')
                     ax[j + len(self.channels) * 2].set_ylabel('Resonance (KHz)')
                     ax[j + len(self.channels) * 2].set_xlabel(xlabel)
+                    ax[j + len(self.channels) * 3].hist(self.embeddings[:, channel], number_of_loops)
+                    ax[j + len(self.channels) * 3].plot(x_axis[i], y_axis[i], 'ro')
+                    ax[j + len(self.channels) * 3].set_ylabel('Distribution of Intensity')
+                    ax[j + len(self.channels) * 3].set_xlabel('Range of Intensity')
 
                 # gets the position of the axis on the figure
                 # pos = ax[j].get_position()
