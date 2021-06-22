@@ -197,7 +197,7 @@ def embedding_maps(data, image, colorbar_shown=True,
         if colorbar_shown == True:
             divider = make_axes_locatable(ax)
             cax = divider.append_axes('right', size='10%', pad=0.05)
-            cbar = plt.colorbar(im, cax=cax, format='%.1e')
+            cbar = plt.colorbar(im, cax=cax, format='%.1f')
 
             # Sets the scales
             if c_lim is not None:
