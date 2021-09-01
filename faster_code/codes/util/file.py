@@ -10,6 +10,9 @@ from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
 import random
 import tensorflow as tf
 import numpy as np
+import string
+from matplotlib import (pyplot as plt, animation, colors,
+                        ticker, path, patches, patheffects)
 
 def set_seeds(seed=42):
     """
@@ -37,6 +40,96 @@ def make_folder(folder, **kwargs):
     os.makedirs(folder, exist_ok=True)
 
     return (folder)
+
+
+def labelfigs(axes, number, style='wb', loc='br',
+              string_add='', size=20, text_pos='center'):
+    """
+    Adds labels to figures
+
+    Parameters
+    ----------
+    axes : matplotlib axes
+        axes which to add the plot to
+    number : int
+        letter number
+    style : str, optional
+        sets the color of the letters
+    loc : str, optional
+        sets the location of the label
+    string_add : str, optional
+        custom string as the label
+    size : int, optional
+        sets the font size for the label
+    text_pos : str, optional
+        set the justification of the label
+    """
+
+    # Sets up various color options
+    formatting_key = {'wb': dict(color='w',
+                                 linewidth=1.5),
+                      'b': dict(color='k',
+                                linewidth=0.5),
+                      'w': dict(color='w',
+                                linewidth=0.5)}
+
+    # Stores the selected option
+    formatting = formatting_key[style]
+
+    # finds the position for the label
+    x_min, x_max = axes.get_xlim()
+    y_min, y_max = axes.get_ylim()
+    x_value = .08 * (x_max - x_min) + x_min
+
+    # Sets the location of the label on the figure
+    if loc == 'br':
+        y_value = y_max - .1 * (y_max - y_min)
+        x_value = .08 * (x_max - x_min) + x_min
+    elif loc == 'tr':
+        y_value = y_max - .9 * (y_max - y_min)
+        x_value = .08 * (x_max - x_min) + x_min
+    elif loc == 'bl':
+        y_value = y_max - .1 * (y_max - y_min)
+        x_value = x_max - .08 * (x_max - x_min)
+    elif loc == 'tl':
+        y_value = y_max - .9 * (y_max - y_min)
+        x_value = x_max - .08 * (x_max - x_min)
+    elif loc == 'tm':
+        y_value = y_max - .9 * (y_max - y_min)
+        x_value = x_min + (x_max - x_min) / 2
+    elif loc == 'bm':
+        y_value = y_max - .1 * (y_max - y_min)
+        x_value = x_min + (x_max - x_min) / 2
+    else:
+        raise ValueError(
+            'Unknown string format imported please look at code for acceptable positions')
+
+    # adds a custom string
+    if string_add == '':
+
+        # Turns to image number into a label
+        if number < 26:
+
+            axes.text(x_value, y_value, string.ascii_lowercase[number],
+                      size=size, weight='bold', ha=text_pos,
+                      va='center', color=formatting['color'],
+                      path_effects=[patheffects.withStroke(linewidth=formatting['linewidth'],
+                                                           foreground="k")])
+
+        # allows for double letter index
+        else:
+            axes.text(x_value, y_value, string.ascii_lowercase[0] + string.ascii_lowercase[number - 26],
+                      size=size, weight='bold', ha=text_pos,
+                      va='center', color=formatting['color'],
+                      path_effects=[patheffects.withStroke(linewidth=formatting['linewidth'],
+                                                           foreground="k")])
+    else:
+        # writes the text to the figure
+        axes.text(x_value, y_value, string_add,
+                  size=size, weight='bold', ha=text_pos,
+                  va='center', color=formatting['color'],
+                  path_effects=[patheffects.withStroke(linewidth=formatting['linewidth'],
+                                                       foreground="k")])
 
 def savefig(filename, printing):
 
