@@ -345,7 +345,7 @@ class generator:
             # builds the figure
             # fig, ax = plt.subplots(graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0), graph_layout[1],
             #                       figsize=(3 * graph_layout[1], 3 * (graph_layout[0] // graph_layout[1] + (graph_layout[0] % graph_layout[1] > 0))))
-            if model_tpye == 'dl':
+            if model_tpye == 'dog':
                 fig, ax = layout_fig(graph_layout[0] * 3, mod=graph_layout[1])
             else:
                 fig, ax = layout_fig(graph_layout[0] * 4, mod=graph_layout[1])
